@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false">
+    <contextName>road-pricing-server</contextName>
+    <property name="LOG_PATH" value="log"/>
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <!--appender 配置-->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+    <!--每日保存一个文件 做多保留30天-->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/rpss.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/rpss/rpss-%d{yyy-MM-dd}.log</fileNamePattern>
+            　<maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+    <!-- 日志存储文件-->
+    <appender name="SQL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/sql.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/sql/sql-%d{yyy-MM-dd}.log</fileNamePattern>
+            　<maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="PAY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/pay.log</file>
+        <encoder>
+            <pattern>%d{HH:mm:ss}-%msg%n"</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/pay/pay-%d{yyy-MM-dd}.log</fileNamePattern>
+            　<maxHistory>180</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!--logger 配置-->
+
+    <root level="info">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+    <logger name="PAY_CALLBACK_LOGGER" level="INFO">
+        <appender-ref ref="PAY_FILE"/>
+    </logger>
+
+    <logger name="com.igoosd.mapper" level="debug" additivity="true">
+        <appender-ref ref="SQL_FILE"/>
+    </logger>
+    <logger name="org.springframework" level="info" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+
+</configuration>

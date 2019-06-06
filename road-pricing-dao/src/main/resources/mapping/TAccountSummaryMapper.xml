@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igoosd.mapper.AccountSummaryMapper">
+
+
+    <select id="fuzzyFindPage" resultType="com.igoosd.domain.AccountSummary">
+        select
+        t.id as id,
+        t.collector_id as collectorId,
+        t.summary_date as summarDate,
+        t.total_amount as totalAmount,
+        t.online_amount as onlineAmount,
+        t.offline_amount as offlineAmount,
+        t.summary_status as summaryStatus,
+        t.create_time as createTime,
+        t.summary_time as summaryTime,
+        t.remark as remark,
+        c.name as collectorName
+
+        from t_account_summary t
+        left join t_collector c on c.id = t.collector_id
+        <trim prefix=" where " prefixOverrides="and">
+            <if test="collectorId !=null">
+                and t.collector_id = #{collectorId}
+            </if>
+            <if test="startTime != null">
+                and t.summary_date >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and t.summary_date &lt;= #{endTime}
+            </if>
+            <if test="summaryStatus != null">
+                and t.summary_status = #{summaryStatus}
+            </if>
+        </trim>
+
+    </select>
+</mapper>

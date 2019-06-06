@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igoosd.mapper.SubParkingMapper">
+
+    <select id="getSubParkingByKey" resultType="com.igoosd.domain.SubParking">
+    select t.id as id,
+    t.code as code,
+    t.parking_id as parkingId,
+    t.name as name,
+    t.code as code,
+    t.geo_location as geoLocation,
+    p.name as parkingName,
+    p.address as parkingAddress
+
+    from t_sub_parking t
+    left join t_parking p on p.id = t.parking_id
+    where t.id = #{id}
+
+</select>
+
+    <select id="fuzzyfindPage" resultType="com.igoosd.domain.SubParking">
+        select
+        t.id as id,
+        t.name as name,
+        t.code as code,
+        t.geo_location as geoLocation,
+        t.create_time as createTime,
+        t.parking_id as parkingId,
+        p.name as parkingName
+
+        from t_sub_parking t left join t_parking p on p.id=t.parking_id
+        <trim prefix=" where " prefixOverrides="and">
+            <if test="parkingId != null">
+                and t.parking_id = #{parkingId}
+            </if>
+            <if test="name != null and name !=''">
+                and t.name like concat('%',#{name},'%')
+            </if>
+        </trim>
+
+    </select>
+
+
+</mapper>

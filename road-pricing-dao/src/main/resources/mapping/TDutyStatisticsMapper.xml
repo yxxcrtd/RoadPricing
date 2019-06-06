@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igoosd.mapper.DutyStatisticsMapper">
+
+
+    <select id="fuzzyFindPage" resultType="com.igoosd.domain.DutyStatistics">
+        select
+          t.id as id,
+          t.collector_id as collectorId,
+          t.sub_parking_id as subParkingId,
+          t.duty_date as dutyDate,
+          t.latest_on_duty_time as latestOnDutyTime,
+          t.latest_off_duty_time as latestOffDutyTime,
+          t.create_time as createTime,
+          c.name as collectorName,
+          s.name as subParkingname
+
+        from t_duty_statistics t
+        left join t_collector c on t.collector_id = c.id
+        left join t_sub_parking s on s.id = t.sub_parking_id
+    <trim prefix=" where " prefixOverrides="and">
+        <if test="collectorId !=null">
+            and t.collector_id = #{collectorId}
+        </if>
+        <if test="subParkingId !=null">
+            and t.sub_parking_id = #{subParkingId}
+        </if>
+        <if test="startTime != null">
+            and t.duty_date >= #{startTime}
+        </if>
+        <if test="endTime !=null">
+            and t.duty_date &lt;= #{endTime}
+        </if>
+
+    </trim>
+
+    </select>
+</mapper>

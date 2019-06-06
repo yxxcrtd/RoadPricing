@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igoosd.mapper.VehicleEntranceRecordMapper">
+
+    <update id="confirmVerExit" parameterType="com.igoosd.domain.VehicleEntranceRecord">
+        update t_vehicle_entrance_record
+        set
+          biz_status = #{bizStatus},
+          update_time = CURRENT_TIMESTAMP
+        where
+          biz_status !=#{bizStatus}
+          AND id = #{id}
+    </update>
+
+
+    <select id="getEntranceWithoutExitRecord" resultType="com.igoosd.domain.VehicleEntranceRecord">
+        SELECT
+        t.id as id,
+        t.enter_time as enter_time,
+        t.enter_collector_id as enterCollectorId,
+        t.parking_id as parkingId,
+        t.sub_parking_id as subParkingId,
+        t.parking_space_id as parkingSpaceId,
+        t.car_number as carNumber,
+        t.member_id as memberId
+
+        from t_vehicle_entrance_record t
+        where
+        t.car_number = #{carNumber}
+        AND t.biz_status in (0,1)
+        /*AND t.enter_time BETWEEN CURRENT_DATE AND (CURRENT_DATE + interval '1D')*/
+    </select>
+
+
+    <select id="getCurDateParkingVerInfo" resultType="com.igoosd.domain.VehicleEntranceRecord">
+        SELECT
+          t.id as id,
+          t.parking_id as parkingId,
+          t.sub_parking_id as subParkingId,
+          t.parking_space_id as parkingSpaceId,
+          t.car_number as carNumber,
+          t.member_id as memberId,
+          t.enter_time as enterTime,
+          p.name as parkingName,
+          p.address as parkingAddress,
+          ps.code as parkingSpaceCode,
+          mt.name as memberTypeName,
+          m.start_date as memberStartDate,
+          m.end_date as memberEndDate
+
+        from t_vehicle_entrance_record t
+        left join t_parking p on p.id = t.parking_id
+        LEFT  join t_sub_parking  sp on sp.id = t.sub_parking_id
+        LEFT  JOIN t_parking_space ps on ps.id = t.parking_space_id
+        LEFT JOIN t_member m on m.id = t.member_id
+        LEFT  JOIN  t_member_type  mt on mt.id = m.member_type_id
+        WHERE t.create_time BETWEEN CURRENT_DATE  AND  CURRENT_DATE + interval '1D'
+           AND t.car_number = #{carNumber}
+           AND t.biz_status in (0,1)
+    </select>
+
+    <select id="getSumParkingChargeAmount" resultType="java.math.BigDecimal">
+        SELECT
+         sum(charge_amount)
+         FROM
+          t_vehicle_entrance_record
+         WHERE
+            update_time BETWEEN #{startDate} AND  #{endDate}
+            AND biz_status = 2
+    </select>
+
+    <select id="getSumRealParkingChargeAmount" resultType="java.math.BigDecimal">
+        SELECT
+        sum(charge_amount)
+        FROM
+        t_vehicle_entrance_record
+        WHERE
+        update_time BETWEEN #{startDate} AND  #{endDate}
+        AND biz_status = 2
+    </select>
+
+    <select id="fuzzyFindPage" resultType="com.igoosd.domain.VehicleEntranceRecord">
+        select
+        t.id as id,
+        t.enter_time as enterTime,
+        t.enter_collector_id as enterCollectorId,
+        t.exit_time as exitTime,
+        t.exit_collector_id as exitCollectorId,
+        t.parking_id as parkingId,
+        t.sub_parking_id as subParkingId,
+        t.parking_space_id as parkingSpaceId,
+        t.car_number as carNumber,
+        t.charge_amount as chargeAmount,
+        t.real_charge_amount as realChargeAmount,
+        t.biz_status as bizStatus,
+        t.member_id as memberId,
+        t.create_time as createTime,
+        t.update_time as updateTime,
+
+        en.name as enterCollectorName,
+        ex.name as exitCollectorName,
+        p.name as parkingName,
+        sp.name as subParkingName,
+        ps.code as parkingSpaceCode,
+        ( case when t.member_id = null then '临时停车' else mt.name end ) as memberTypeName
+
+        from t_vehicle_entrance_record t
+        left join t_collector en on en.id = t.enter_collector_id
+        left join t_collector ex on ex.id = t.exit_collector_id
+        left join t_parking p on p.id = t.parking_id
+        left join t_sub_parking sp on sp.id = t.sub_parking_id
+        left join t_parking_space ps on ps.id = t.parking_space_id
+        left join t_member m on m.id = t.member_id
+        left join t_member_type mt on mt.id = m.member_type_id
+        <trim prefix=" where " prefixOverrides="and">
+            <if test="carNumber !=null and carNumber !=''">
+                and t.car_number like concat('%',#{carNumber},'%')
+            </if>
+            <if test="startTime !=null">
+                and t.create_time >= #{startTime}
+            </if>
+            <if test="endTime !=null">
+                and t.create_time &lt;= #{endTime}
+            </if>
+            <if test="bizStatus !=null">
+                and t.biz_status &lt;= #{bizStatus}
+            </if>
+        </trim>
+
+    </select>
+
+    <select id="getDetailVerByKey" resultType="com.igoosd.domain.VehicleEntranceRecord">
+      select
+        t.id as id,
+        t.enter_time as enterTime,
+        t.enter_collector_id as enterCollectorId,
+        t.exit_time as exitTime,
+        t.exit_collector_id as exitCollectorId,
+        t.parking_id as parkingId,
+        t.sub_parking_id as subParkingId,
+        t.parking_space_id as parkingSpaceId,
+        t.car_number as carNumber,
+        t.charge_amount as chargeAmount,
+        t.real_charge_amount as realChargeAmount,
+        t.biz_status as bizStatus,
+        t.member_id as memberId,
+        t.create_time as createTime,
+        t.update_time as updateTime,
+
+        en.name as enterCollectorName,
+        ex.name as exitCollectorName,
+        p.name as parkingName,
+        sp.name as subParkingName,
+        ps.code as parkingSpaceCode,
+        ( case when t.member_id = null then '临时停车' else mt.name end ) as memberTypeName
+
+        from t_vehicle_entrance_record t
+        left join t_collector en on en.id = t.enter_collector_id
+        left join t_collector ex on ex.id = t.exit_collector_id
+        left join t_parking p on p.id = t.parking_id
+        left join t_sub_parking sp on sp.id = t.sub_parking_id
+        left join t_parking_space ps on ps.id = t.parking_space_id
+        left join t_member m on m.id = t.member_id
+        left join t_member_type mt on mt.id = m.member_type_id
+    where t.id = #{id}
+
+    </select>
+</mapper>

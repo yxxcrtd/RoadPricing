@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igoosd.mapper.DutyRecordMapper">
+
+
+    <select id="getCurDateDutyCollectorIds" resultType="long">
+        select DISTINCT collector_id
+         from t_duty_record t
+         where t.login_time BETWEEN CURRENT_DATE  AND CURRENT_DATE + interval '1D'
+    </select>
+
+    <select id="fuzzyFindPage" resultType="com.igoosd.domain.DutyRecord">
+        select
+         t.id as id,
+         t.collector_id as collectorId,
+         t.sub_parking_id as subParkingId,
+         t.login_time as loginTime,
+         t.location as location,
+         t.device_id as deviceId,
+         t.ip as ip,
+        c.name as collectorName,
+        s.name as subParkingName
+
+        from t_duty_record t
+        left join t_collector c on c.id = t.collector_id
+        left join t_sub_parking s on s.id = t.sub_parking_id
+    <trim prefix=" where " prefixOverrides="and">
+        <if test="collectorId !=null">
+            and t.collector_id =#{collectorId}
+        </if>
+        <if test="subParkingId != null">
+            and t.sub_parking_id = #{subParkingId}
+        </if>
+        <if test="startTime != null">
+            and t.login_time >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and t.login_time &lt;= #{endTime}
+        </if>
+    </trim>
+
+
+    </select>
+
+</mapper>

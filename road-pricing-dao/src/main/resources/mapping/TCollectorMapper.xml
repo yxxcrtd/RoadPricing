@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igoosd.mapper.CollectorMapper">
+
+
+    <select id="fuzzyFindPage" resultType="com.igoosd.domain.Collector">
+
+        select
+          t.id as id,
+          t.name as name,
+          t.sex as sex,
+          t.phone as phone,
+          t.address as address,
+          t.job_status as jobStatus,
+          t.job_number as jobNumber,
+          t.create_time as createTime
+        from t_collector t
+        <trim prefix=" where " prefixOverrides="and">
+            <if test="name !=null and name !=''">
+                and t.name like concat('%',#{name},'%')
+            </if>
+            <if test="jobNumber !=null and jobNumber !=''">
+                and t.job_number like concat('%',#{jobNumber},'%')
+            </if>
+            <if test="jobStatus !=null ">
+                and t.job_status = #{jobStatus}
+            </if>
+        </trim>
+
+    </select>
+</mapper>

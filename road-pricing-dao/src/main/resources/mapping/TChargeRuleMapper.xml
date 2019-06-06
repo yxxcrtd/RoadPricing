@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igoosd.mapper.ChargeRuleMapper">
+
+
+    <select id="getChargeRuleByParkingId" resultType="chargeRule">
+        select
+         t.id as id,
+         t.start_time as startTime,
+         t.end_time as endTime,
+         t.rule_type as ruleType,
+         t.rule_content as ruleContent,
+         t.max_charge_amount as maxChargeAmount
+        from t_charge_rule t
+        join t_parking p  on p.charge_rule_id = t.id
+        where p.id = #{parkingId}
+    </select>
+
+    <select id="getTotalParkingChargeRuleList" resultType="chargeRule">
+          select
+         t.id as id,
+         t.start_time as startTime,
+         t.end_time as endTime,
+         t.rule_type as ruleType,
+         t.rule_content as ruleContent,
+         t.max_charge_amount as maxChargeAmount,
+         p.id as parkingId
+         from t_parking p
+         left join  t_charge_rule t on p.charge_rule_id = t.id
+    </select>
+
+</mapper>

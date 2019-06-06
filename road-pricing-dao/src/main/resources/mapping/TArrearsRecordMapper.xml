@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igoosd.mapper.ArrearsRecordMapper">
+
+
+    <select id="getTotalArrearsAmountByCarNumber" resultType="java.math.BigDecimal">
+        select sum(t.arrears_amount)
+         from t_arrears_record t
+         where t.car_number = #{carNumber}
+          and t.payment_status = 0
+    </select>
+
+    <select id="findArrearsListByCarNumber" resultType="com.igoosd.domain.ArrearsRecord">
+        select
+          t.id as id,
+          t.arrears_amount as arrearsAmount,
+          v.enter_time as enterTime,
+          v.exit_time as exitTime,
+          p.name as parkingName
+        from t_arrears_record t
+        left join t_vehicle_entrance_record v on v.id = t.vehicle_entrance_id
+        left join t_parking p on p.id = v.parking_id
+        WHERE  t.payment_status = 0
+        and t.car_number = #{carNumber}
+        order by t.create_time desc
+
+    </select>
+
+    <update id="confirmOrderForArrearsRecords">
+        UPDATE t_arrears_record
+        set payment_status = #{paymentStatus}
+        WHERE id in
+        <foreach collection="list" index="index" item="item" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+    </update>
+
+
+
+    <select id="getSumArrearsChargeAmount" resultType="java.math.BigDecimal">
+        SELECT
+        sum(arrears_amount)
+        FROM t_arrears_record
+        WHERE update_time BETWEEN #{startDate} AND  #{endDate}
+        AND  payment_status = 1
+    </select>
+
+
+    <select id="findArrearsIdsByCarNumber" resultType="java.lang.Long">
+        select
+         t.id as id
+        from t_arrears_record t
+        where t.car_number = #{carNumber}
+    </select>
+
+
+    <!-- 分页查询-->
+    <select id="fuzzyFindPage" resultType="com.igoosd.domain.ArrearsRecord">
+        select
+         t.id as id,
+         t.car_number as carNumber,
+         t.arrears_amount as arrearsAmount,
+         t.vehicle_entrance_id as vehicleEntranceId,
+         t.create_time as createTime,
+         t.update_time as update_time
+
+         from t_arrears_record t
+         left join t_vehicle_entrance_record v on v.id = t.vehicle_entrance_id
+
+        where payment_status = 0
+        <if test="carNumber !=null and carNumber !=''">
+            and t.car_number like concat('%',#{carNumber},'%')
+        </if>
+        <if test="startTime !=null">
+            and t.create_time >= #{startTime}
+        </if>
+        <if test="endTime !=null">
+            and t.create_time &lt;= #{endTime}
+        </if>
+    </select>
+
+</mapper>

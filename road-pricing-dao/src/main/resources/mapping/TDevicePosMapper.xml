@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igoosd.mapper.DevicePosMapper">
+
+
+    <select id="fuzzyFindPage" resultType="com.igoosd.domain.DevicePos">
+
+        select
+          t.id as id,
+          t.device_id as deviceId,
+          t.bluetooth_id as bluetoothId,
+          t.sub_parking_id as subParkingId,
+          t.remark as remark,
+          t.device_type as deviceType,
+          s.name as subParkingName,
+          s.code as subParkingCode
+
+        from t_device_pos t
+        left join t_sub_parking s on s.id = t.sub_parking_id
+      <trim prefix=" where " prefixOverrides="and">
+          <if test="deviceType !=null">
+              and t.device_type = #{deviceType}
+          </if>
+          <if test="subParkingId !=null">
+              and t.sub_parking_id = #{subParkingId}
+          </if>
+          <if test="remark !=null and remark !=''">
+              and t.remark like concat('%',#{remark},'%')
+          </if>
+          <if test="deviceId !=null and deviceId !=''">
+              and t.device_id like concat('%',#{deviceId},'%')
+          </if>
+          <if test="bluetoothId !=null and bluetoothId !=''">
+              and t.bluetooth_id like concat('%',#{bluetoothId},'%')
+          </if>
+      </trim>
+
+    </select>
+</mapper>

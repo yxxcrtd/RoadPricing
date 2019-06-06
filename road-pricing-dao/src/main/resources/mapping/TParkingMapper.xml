@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igoosd.mapper.ParkingMapper">
+
+
+    <select id="fuzzyFindPage" resultType="com.igoosd.domain.Parking">
+        select
+         t.id as id,
+         t.name as name,
+         t.total_parking_space as totalParkingSpace,
+         t.create_time as createTime,
+         t.address as address,
+         t.charge_rule_id as chargeRuleId,
+         c.name as chargeRuleName
+
+         from t_parking t left join t_charge_rule c  on c.id = t.charge_rule_id
+        <trim prefix="where" prefixOverrides="and">
+            <if test="name != null and name !=''">
+                and t.name like concat('%',#{name},'%')
+            </if>
+            <if test="chargeRuleId != null">
+                and t.chargeRuleId = #{chargeRuleId}
+            </if>
+        </trim>
+
+    </select>
+</mapper>

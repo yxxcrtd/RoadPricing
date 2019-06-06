@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igoosd.mapper.MemberMapper">
+
+
+    <select id="getMemberInfoByCarNumber" resultType="com.igoosd.domain.Member">
+        select t.id as id,
+        t.car_number as carNumber,
+        t.start_date as startDate,
+        t.end_date as endDate,
+        s.name as memberTypeName,
+        t.member_type_id as memberTypeId
+        from t_member t
+        left join  t_member_type s on s.id = t.member_type_id
+        where t.start_date &lt;= CURRENT_DATE  and t.end_date >= CURRENT_DATE
+        AND  t.sub_parking_id in (0,#{subParkingId})
+        AND t.car_number = #{carNumber}
+    </select>
+
+    <select id="getMemberListByCarNumber" resultType="com.igoosd.domain.Member">
+        select t.id as id,
+        t.car_number as carNumber,
+        t.start_date as  startDate,
+        t.end_date as endDate
+        from t_member t
+        where  t.end_date + interval '1D' > #{enterTime}
+        AND  t.sub_parking_id in (0,#{subParkingId})
+        AND t.car_number = #{carNumber}
+        order by t.start_date ASC
+    </select>
+    <select id="fuzzyFindPage" resultType="com.igoosd.domain.Member">
+        select
+        t.id as id,
+        t.car_number as carNumber,
+        t.sub_parking_id as subParkingName,
+        t.start_date as startDate,
+        t.end_date as endDate,
+        t.member_type_id as memberTypeId,
+        t.create_time as createTime,
+        t.charge_amount as chargeAmount,
+        t.creator as creator,
+        mt.name as memberTypeName,
+        (case when t.sub_parking_id=0 then '全路段' else s.name end) as subParkingName,
+        s.code as subParkingCode
+
+        from t_member t
+        left join t_member_type mt on mt.id = t.member_type_id
+        left join t_sub_parking s on s.id = t.sub_parking_id
+        <trim prefix=" where " prefixOverrides="and">
+            <if test="carNumber !=null and carNumber !=''">
+                and t.car_number like concat('%',#{carNumber},'%')
+            </if>
+            <if test="subParkingName !=null and subParkingName !=''">
+                and s.name like concat('%',#{subParkingName},'%')
+            </if>
+            <if test="subParkingId !=null">
+                and t.sub_parking_id = #{subParkingName}
+            </if>
+            <if test="memberTypeId !=null">
+                and t.member_type_id = #{memberTypeId}
+            </if>
+        </trim>
+
+    </select>
+    <select id="getLatestMember" resultType="com.igoosd.domain.Member">
+        select
+         t.id as id,
+         t.car_number as carNumber,
+         t.member_type_id as memberTypeId,
+         t.start_date as startDate,
+         t.end_date as endDate,
+         t.create_time as createTime,
+         t.creator as creator,
+         t.charge_amount as chargeAmount
+
+        from t_member t
+        where
+         t.car_number = #{carNumber} order by endDate desc limit 1
+
+    </select>
+</mapper>

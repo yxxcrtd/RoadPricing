@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.igoosd.mapper.ParkingSpaceMapper">
+
+    
+    <select id="findParkingSpaceList" resultType="parkingSpace">
+     SELECT
+     t.id as id,
+     t.code as code,
+     t.geo_sensor_code as geoSensorCode,
+     t.sub_parking_id as subParkingId,
+     t.parking_id as parkingId,
+     p.name as parkingName,
+     s.code as subParkingCode,
+     v.car_number as carNumber,
+     v.id as vehicleEntranceRecordId,
+     v.enter_time as enterTime,
+     mt.id as memberTypeId,
+     mt.name as memberTypeName,
+     m.start_date as memberStartDate,
+     m.end_date as memberEndDate,
+     (case WHEN v.id is not null THEN 1 ELSE 0 END) as status,
+     sum(a.arrears_amount) as totalArrearsAmount
+     from t_parking_space t
+     left join t_parking p on t.parking_id = p.id
+     left join t_sub_parking s on s.id = t.sub_parking_id
+     left join t_vehicle_entrance_record v on v.parking_space_id = t.id AND v.create_time BETWEEN CURRENT_DATE  AND  (current_date +  interval  '1D') AND  v.biz_status in (0,1)
+     left join t_member m on m.car_number = v.car_number AND m.start_date >= CURRENT_DATE  AND m.end_date &lt;= CURRENT_DATE
+     left join t_member_type mt on mt.id = m.member_type_id
+     left join t_arrears_record a on a.car_number = v.car_number AND a.payment_status = 0
+     GROUP BY t.id,t.code,geoSensorCode,subParkingId,parkingId,parkingName,subParkingCode,carNumber,
+     vehicleEntranceRecordId,enterTime,memberTypeId,memberTypeId,memberTypeName,memberStartDate,memberEndDate,status
+    order by t.id
+    limit ${limit} offset ${offset}
+    </select>
+
+
+  <select id="findIdsBySubParkingId" resultType="long">
+    select t.id as id
+    from t_parking_space t
+    where t.sub_parking_id = #{subParkingId}
+    order BY t.code asc
+  </select>
+
+
+    <select id="fuzzyFindPage" resultType="com.igoosd.domain.ParkingSpace">
+        select
+           t.id as id,
+           t.code as code,
+           t.geo_sensor_code as geoSensorCode,
+           t.sub_parking_id as subParkingId,
+           t.parking_id as parkingId,
+           t.create_time as createTime,
+           p.name as parkingName,
+           s.name as subParkingName,
+           s.code as subParkingCode
+
+        from t_parking_space t
+        left join t_sub_parking s on s.id = t.sub_parking_id
+        left join t_parking p on p.id = t.parking_id
+      <trim prefix=" where " prefixOverrides="and">
+          <if test="parkingId != null">
+              and t.parking_id = #{parkingId}
+          </if>
+          <if test="subParkingId != null">
+              and t.sub_parking_id = #{subParkingId}
+          </if>
+          <if test="code != null and code !=''">
+              and t.code  like concat('%',#{code},'%')
+          </if>
+      </trim>
+
+    </select>
+
+</mapper>
